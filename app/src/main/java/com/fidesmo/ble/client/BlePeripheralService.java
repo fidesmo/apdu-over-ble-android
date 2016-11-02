@@ -127,7 +127,7 @@ public class BlePeripheralService extends Service {
                 .addServiceUuid(pUuid)
                 .build();
 
-        BluetoothLeAdvertiser advertiser = btAdapter.getBluetoothLeAdvertiser();
+        final BluetoothLeAdvertiser advertiser = btAdapter.getBluetoothLeAdvertiser();
 
         if (advertiser == null) {
             log("Advertising is not supported on this device");

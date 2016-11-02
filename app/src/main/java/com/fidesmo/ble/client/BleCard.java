@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -63,8 +64,23 @@ public class BleCard implements IsoCard, Closeable {
 
     @Override
     public void connect() throws IOException {
+
         try {
-            gattClient.connect(true);
+            final CountDownLatch connectionLatch = new CountDownLatch(1);
+
+            gattClient.connect(true, new BleConnectionStatusListener() {
+                @Override
+                public void connectionEstablished() {
+                    connectionLatch.countDown();
+                }
+
+                @Override
+                public void connectionFailed() {
+                    connectionLatch.countDown();
+                }
+            });
+
+            connectionLatch.await(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             throw new IOException(e);
         }
