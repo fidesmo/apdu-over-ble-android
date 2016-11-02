@@ -31,6 +31,7 @@ import nordpol.android.OnDiscoveredTagListener;
 import nordpol.android.TagDispatcher;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
 
     private IsoCard nfcCard;
 
-    private Queue<CardOperation> pendingOperations = new ConcurrentLinkedQueue<>();
+    private LinkedList<CardOperation> pendingOperations = new LinkedList<>();
 
     private BroadcastReceiver apduReceiver = new BroadcastReceiver() {
         @Override
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
             final byte[] data = intent.getByteArrayExtra("apdu");
             final long requestId = intent.getLongExtra("id", -1L);
 
-            pendingOperations.add(new CardOperation(requestId, data));
+            pendingOperations.offerLast(new CardOperation(requestId, data));
 
             processPendingCardOperations();
         }
@@ -273,6 +274,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
             } catch (IOException e) {
                 log("NFC card disconnected: " + e.getMessage());
                 Log.w(TAG, e);
+                pendingOperations.offerFirst(operation);
                 nfcCard = null;
             }
         }
