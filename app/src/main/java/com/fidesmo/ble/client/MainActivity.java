@@ -56,9 +56,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
             final byte[] data = intent.getByteArrayExtra("apdu");
             final long requestId = intent.getLongExtra("id", -1L);
 
-            boolean result = pendingOperations.offerLast(new CardOperation(requestId, data));
-
-            log("added operation to list: " + result + ", size: " + pendingOperations.size());
+            pendingOperations.offerLast(new CardOperation(requestId, data));
 
             processPendingCardOperations();
         }
@@ -259,13 +257,11 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
 
     private void processPendingCardOperations() {
         if ( nfcCard == null) {
-            log("Please attach card to the phone, pending operations:" + pendingOperations.size());
+            log("Please attach card to the phone, operations pending:" + pendingOperations.size());
             return;
         }
 
         CardOperation operation = pendingOperations.poll();
-
-        log("Got operation from list: " + pendingOperations.size());
 
         while (operation != null && nfcCard != null) {
             try {
