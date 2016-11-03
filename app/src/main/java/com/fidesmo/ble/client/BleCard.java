@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.RequiresPermission;
+import android.util.Log;
 import com.fidesmo.ble.client.protocol.SimplePacketFragmenter;
 import nordpol.IsoCard;
 import nordpol.OnCardErrorListener;
@@ -68,14 +69,8 @@ public class BleCard implements IsoCard, Closeable {
         try {
             final CountDownLatch connectionLatch = new CountDownLatch(1);
 
-            gattClient.connect(true, new BleConnectionStatusListener() {
-                @Override
+            gattClient.connect(false, new BleConnectionListener() {
                 public void connectionEstablished() {
-                    connectionLatch.countDown();
-                }
-
-                @Override
-                public void connectionFailed() {
                     connectionLatch.countDown();
                 }
             });

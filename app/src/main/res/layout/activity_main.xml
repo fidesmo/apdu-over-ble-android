@@ -13,14 +13,6 @@
     <requestFocus android:layout_alignParentBottom="true" android:layout_alignParentLeft="true"
                   android:layout_alignParentStart="true" android:layout_marginLeft="68dp"
                   android:layout_marginStart="68dp" android:layout_marginBottom="70dp"/>
-    <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Scan"
-            android:id="@+id/btnScan"
-            android:onClick="onDiscoveryClicked"
-            android:layout_alignParentBottom="true" android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"/>
     <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -46,9 +38,8 @@
     <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Stop Ble Server"
-            android:id="@+id/btnStopServer"
-            android:onClick="onStopServerClicked" android:nestedScrollingEnabled="false"
-            android:layout_alignParentBottom="true" android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"/>
+            android:text="Scan"
+            android:id="@+id/btnScan"
+            android:onClick="onDiscoveryClicked"
+            android:layout_alignParentBottom="true" android:layout_centerHorizontal="true"/>
 </RelativeLayout>
