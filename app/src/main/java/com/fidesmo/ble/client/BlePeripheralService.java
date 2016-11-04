@@ -187,6 +187,8 @@ public class BlePeripheralService extends Service {
                 log("onConnectionStateChange: " + BleUtils.getStateDescription(newState));
 
                 if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    // Can cause calling finishConversation() twice on Conversation finished command and on connection close.
+                    // But as we only cleaning up the list – it won't harm, but with it in case of an error – we still sending cleanup commands.
                     finishConversation();
                 }
             }
