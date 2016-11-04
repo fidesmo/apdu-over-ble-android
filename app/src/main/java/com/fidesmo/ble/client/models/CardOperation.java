@@ -1,6 +1,6 @@
 package com.fidesmo.ble.client.models;
 
-import java.util.Arrays;
+import com.fidesmo.ble.client.Utils;
 
 public class CardOperation {
     private final long id;
@@ -32,8 +32,8 @@ public class CardOperation {
     public String toString() {
         return "CardOperation{" +
                 "id=" + id +
-                ", request=" + Arrays.toString(request) +
-                ", response=" + Arrays.toString(response) +
+                ", request=" + Utils.encodeHex(request) +
+                ", response=" + (response != null ? Utils.encodeHex(response) : null) +
                 '}';
     }
 }

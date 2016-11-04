@@ -32,8 +32,6 @@ import nordpol.android.TagDispatcher;
 
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static com.fidesmo.ble.client.BleUtils.byteArrayToString;
 
@@ -77,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
 
             IntentFilter logFilter = new IntentFilter(BlePeripheralService.LOG);
             IntentFilter apduFilter = new IntentFilter(BlePeripheralService.BLE_APDU);
+            IntentFilter conversationFinishFilter = new IntentFilter(BlePeripheralService.CONVERSATION_FINISHED);
 
             broadcastManager.registerReceiver(new BroadcastReceiver() {
                 @Override
@@ -87,6 +86,14 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
             }, logFilter);
 
             broadcastManager.registerReceiver(apduReceiver, apduFilter);
+
+            broadcastManager.registerReceiver(new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    log("Conversation finished");
+                    pendingOperations.clear();
+                }
+            }, conversationFinishFilter);
 
             askForBtDevicePermissionsAndFireAction(REQUEST_CODE_ADVERT);
         }
@@ -99,8 +106,14 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
     public void tagDiscovered(Tag tag) {
         try {
             nfcCard = AndroidCard.get(tag);
+
+            if (pendingOperations.isEmpty()) {
+                log("NFC Card attached. Awaiting for connection");
+            } else {
+                log("NFC Card attached. Processing pending operations");
+            }
+
             processPendingCardOperations();
-            log("card found");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -139,12 +152,6 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
         } else {
             deviceScanner.stopScan();
         }
-    }
-
-    public void onStopServerClicked(View v) {
-        log("Stopping service");
-        Intent localIntent = new Intent(BlePeripheralService.ACTION).putExtra("cmd", BlePeripheralService.CMD_STOP);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
     private void askForBtDevicePermissionsAndFireAction(int requestCode) {
@@ -250,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
 
     private void processPendingCardOperations() {
         if ( nfcCard == null) {
-            log("Please attach card to the phone");
+            log("Please attach card to the phone, operations pending:" + pendingOperations.size());
             return;
         }
 

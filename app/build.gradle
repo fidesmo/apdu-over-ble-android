@@ -45,6 +45,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'io.reactivex:rxjava:1.0.13'
-    compile 'com.fidesmo:ble-client-android:0.1.9'
+    compile 'com.fidesmo:ble-client-android:0.1.10'
     compile 'com.fidesmo:nordpol-android:0.1.18'
 }

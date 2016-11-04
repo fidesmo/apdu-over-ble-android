@@ -40,6 +40,7 @@ public class BlePeripheralService extends Service {
     public static final String ACTION   = "com.fidesmo.ble.client.BlePeripheralService.ACTION";
     public static final String LOG      = "com.fidesmo.ble.client.BlePeripheralService.LOG";
     public static final String BLE_APDU = "com.fidesmo.ble.client.BlePeripheralService.BLE_APDU";
+    public static final String CONVERSATION_FINISHED = "com.fidesmo.ble.client.BlePeripheralService.CONVERSATION_FINISHED";
 
     public static final String CMD_LOGS = "LOGS";
     public static final String CMD_SE_RESPONSE = "SE_RESPONSE";
@@ -184,6 +185,12 @@ public class BlePeripheralService extends Service {
             @Override
             public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
                 log("onConnectionStateChange: " + BleUtils.getStateDescription(newState));
+
+                if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    // Can cause calling finishConversation() twice on Conversation finished command and on connection close.
+                    // But as we only cleaning up the list – it won't harm, but with it in case of an error – we still sending cleanup commands.
+                    finishConversation();
+                }
             }
 
             @Override
@@ -254,7 +261,7 @@ public class BlePeripheralService extends Service {
                 }
 
                 if(APDU_CONVERSATION_FINISHED_CHARACTERISTIC_UUID.equals(characteristic.getUuid())) {
-                    log("Conversion finished");
+                    finishConversation();
                     return;
                 }
 
@@ -298,7 +305,7 @@ public class BlePeripheralService extends Service {
 
             @Override
             public void onMtuChanged(BluetoothDevice device, int mtu) {
-                log("onMtuChanged: " + mtu + "\n Please attach the card to the phone.");
+                log("onMtuChanged: " + mtu);
             }
         };
 
@@ -349,6 +356,11 @@ public class BlePeripheralService extends Service {
                 log("Registered services: " + s.getUuid());
             }
         }
+    }
+
+    private void finishConversation() {
+        Intent intent = new Intent(BlePeripheralService.CONVERSATION_FINISHED);
+        LocalBroadcastManager.getInstance(BlePeripheralService.this).sendBroadcast(intent);
     }
 
     private void log(String s) {
