@@ -1,4 +1,4 @@
-# Android BLE client
+# Android BLE client-server prototype
 
 Prototype implementing the server and client sides of the APDU over Bluetooth Low Energy transport protocol. The specification is published in this repository: [https://github.com/fidesmo/apdu-over-ble](https://github.com/fidesmo/apdu-over-ble)
 
@@ -14,8 +14,7 @@ To fully test the Client --> Server --> Secure Element connection, it is necessa
 
 For activating the server mode in the terminal you just need to install the
 application in it, and run it.  Please bear in mind that not any Android phone
-can be a BLE server.  Phones that can behave as BLE Server include, at the time
-of writing: Nexus 5X, Nexus 6P, Nexus 6, Nexus 9, Moto E 4G LTE, LG G4, Galaxy S6. The phone needs to have an Android version >= 6.0 (API level >= 23) and NFC capabilities.
+can be a BLE server. The phone needs to have an Android version >= 6.0 (API level >= 23) and NFC capabilities.
 
 For this to work correctly, please be sure to attach a contactless card to the
 phone after establishing the connection. Server will print a message: `Please attach the card to the phone` which indicates that a 
