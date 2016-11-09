@@ -14,7 +14,7 @@ To fully test the Client --> Server --> Secure Element connection, it is necessa
 
 For activating the server mode you just need to install and start the
 application on it. If phone supports BLE peripheral mode – server will be started automatically. 
-Please bear in mind that not any Android phone can be a BLE server. The phone needs to have an Android 
+Please bear in mind that not all Android phones can be BLE servers. The phone needs to have an Android 
 version >= 6.0 (API level >= 23) and NFC capabilities.
 
 For this to work correctly, please be sure to attach a contactless card to the
@@ -37,8 +37,9 @@ For a phone to work as a BLE client, you need to install the app in it, and then
 
 ![scan started](https://github.com/fidesmo/android-ble-server/blob/master/images/scan-started.png)
      
-2. After server on the other device will be discovered it will ask to attach the NFC card to it (on the server side). After that client will 
-automatically send APDUs asking for card information and will print it:
+2. The client will automatically discover the peripheral device. In case of using the same application in the server mode it will ask to attach the NFC card to it. 
+If the card is a Fidesmo card (link to https://developer.fidesmo.com/fidesmocard) the card identifiers are read by the server and transmitted to the client, which displays them.
+
 
 ![card information obtained](https://github.com/fidesmo/android-ble-server/blob/master/images/info-obtained.jpg)
 

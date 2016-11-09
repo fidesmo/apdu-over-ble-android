@@ -33,7 +33,7 @@
                 android:text="Press scan or Advertise button"
                 android:id="@+id/outputView"
                 android:layout_alignParentTop="true" android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true" android:textSize="9dp"/>
+                android:layout_alignParentStart="true"/>
     </ScrollView>
     <Button
             android:layout_width="wrap_content"
