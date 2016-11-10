@@ -37,7 +37,7 @@ For a phone to work as a BLE client, you need to install the app in it, and then
 
 ![scan started](https://github.com/fidesmo/android-ble-server/blob/master/images/scan-started.png)
      
-2. The client will automatically discover the peripheral device. In case of using the same application in the server mode it will ask to attach the NFC card to it. 
+2. The client will automatically discover the peripheral device (server). If the server is this same application running in server mode, the server will ask the user to attach the NFC card to it.
 If the card is a Fidesmo card (link to https://developer.fidesmo.com/fidesmocard) the card identifiers are read by the server and transmitted to the client, which displays them.
 
 
