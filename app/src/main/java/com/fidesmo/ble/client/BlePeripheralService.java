@@ -23,6 +23,7 @@ import com.fidesmo.ble.client.protocol.PacketFragmenter;
 import com.fidesmo.ble.client.protocol.SimplePacketFragmenter;
 
 import java.util.LinkedList;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -41,6 +42,8 @@ public class BlePeripheralService extends Service {
     public static final String LOG      = "com.fidesmo.ble.client.BlePeripheralService.LOG";
     public static final String BLE_APDU = "com.fidesmo.ble.client.BlePeripheralService.BLE_APDU";
     public static final String CONVERSATION_FINISHED = "com.fidesmo.ble.client.BlePeripheralService.CONVERSATION_FINISHED";
+    // Client Characteristic Configuration Descriptor (CCCD): https://www.bluetooth.com/specifications/gatt/descriptors
+    public static final String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 
     public static final String CMD_LOGS = "LOGS";
     public static final String CMD_SE_RESPONSE = "SE_RESPONSE";
@@ -284,12 +287,15 @@ public class BlePeripheralService extends Service {
             public void onDescriptorReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattDescriptor descriptor) {
                 super.onDescriptorReadRequest(device, requestId, offset, descriptor);
                 log("onDescriptorReadRequest: " + descriptor.getUuid() + " char: " + descriptor.getCharacteristic().getUuid());
+                gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, descriptor.getValue());
             }
 
             @Override
             public void onDescriptorWriteRequest(BluetoothDevice device, int requestId, BluetoothGattDescriptor descriptor,
                                                  boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
+                super.onDescriptorWriteRequest(device, requestId, descriptor, preparedWrite, responseNeeded, offset, value);
                 log("onDescriptorWriteRequest: " + descriptor.getUuid() + " char: " + descriptor.getCharacteristic().getUuid());
+                gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, value);
             }
 
             @Override
@@ -300,7 +306,7 @@ public class BlePeripheralService extends Service {
 
             @Override
             public void onNotificationSent(BluetoothDevice device, int status) {
-                // log("onNotificationSent: " + device.getAddress() + ", status: " + status);
+                log("onNotificationSent: " + device.getAddress() + ", status: " + status);
             }
 
             @Override
@@ -322,6 +328,12 @@ public class BlePeripheralService extends Service {
                     new BluetoothGattCharacteristic(BleCard.APDU_RESPONSE_READY_NOTIFY_CHARACTERISTIC_UUID,
                             BluetoothGattCharacteristic.PROPERTY_NOTIFY,
                             BluetoothGattCharacteristic.PERMISSION_READ);
+
+            // Notification descriptor is needed to be added to "readNotifyCharacteristic"
+            BluetoothGattDescriptor gD = new BluetoothGattDescriptor(UUID.fromString(CLIENT_CHARACTERISTIC_CONFIG),
+                    BluetoothGattDescriptor.PERMISSION_WRITE | BluetoothGattDescriptor.PERMISSION_READ);
+            gD.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            readNotifyCharacteristic.addDescriptor(gD);
 
             BluetoothGattCharacteristic readCharacteristic =
                     new BluetoothGattCharacteristic(BleCard.APDU_READ_CHARACTERISTIC_UUID,
@@ -388,9 +400,7 @@ public class BlePeripheralService extends Service {
     private void passCardResponse(byte[] response) {
         currentResponsePacket = fragmentationProtocol.fragmenter(mtu, response);
         notifyAllDevices("OK");
-
         log("Current Request Id: " + requestId.incrementAndGet());
-
     }
 
     private void notifyAllDevices(String notification) {
