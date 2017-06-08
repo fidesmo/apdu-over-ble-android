@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.fidesmo.ble.R;
 import com.fidesmo.ble.client.apdu.CardInfoClient;
+import com.fidesmo.ble.client.apdu.SimpleApduFragmenter;
 import com.fidesmo.ble.client.models.CardInfo;
 import com.fidesmo.ble.client.models.CardOperation;
 import nordpol.IsoCard;
@@ -49,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
     private IsoCard nfcCard;
 
     private LinkedList<CardOperation> pendingOperations = new LinkedList<>();
+
+    private SimpleApduFragmenter apduFragmenter = new SimpleApduFragmenter();
 
     private BroadcastReceiver apduReceiver = new BroadcastReceiver() {
         @Override
@@ -100,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
 
         nfcTagDispatcher = TagDispatcher.get(this, this, false, false, false, true, false, true);
     }
-
 
     @Override
     public void tagDiscovered(Tag tag) {
@@ -271,9 +273,12 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
                 }
 
                 Log.i(TAG, "Trying to transcieve data to a card: " + byteArrayToString(operation.getRequest()));
-
-                byte[] result = nfcCard.transceive(operation.getRequest());
-                operation.setResponse(result);
+                byte[][] apdus = apduFragmenter.decode(operation.getRequest());
+                byte[][] response = new byte[apdus.length][];
+                for (int i = 0; i < apdus.length; i ++) {
+                    response[i] = nfcCard.transceive(apdus[i]);
+                }
+                operation.setResponse(apduFragmenter.encode(response));
                 sendResponse(operation);
 
                 operation = pendingOperations.poll();

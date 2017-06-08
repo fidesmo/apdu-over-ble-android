@@ -17,6 +17,7 @@ import android.os.ParcelUuid;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
+
 import com.fidesmo.ble.client.protocol.FragmentationProtocol;
 import com.fidesmo.ble.client.protocol.PacketDefragmenter;
 import com.fidesmo.ble.client.protocol.PacketFragmenter;
@@ -213,28 +214,17 @@ public class BlePeripheralService extends Service {
                     return ;
                 }
 
+                if (characteristic.getUuid().equals(BleCard.APDU_READ_CHARACTERISTIC_UUID) && currentResponsePacket != null) {
 
-                if (!characteristic.getUuid().equals(BleCard.APDU_READ_CHARACTERISTIC_UUID)) {
-                    gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null);
-                    log("Unsupported characteristics read: " + characteristic.getUuid());
-                    return ;
-                }
+                    if (offset == 0 && currentResponsePacket.hasMoreData()) {
+                        // save Fidesmo's internal packet inside characteristic
+                        characteristic.setValue(currentResponsePacket.nextFragment());
+                    }
 
-                if (currentResponsePacket == null) {
-                    log("No answer ready yet");
-                    gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null);
-                    return;
-                }
-
-                if (currentResponsePacket.hasMoreData()) {
-                    gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, currentResponsePacket.nextFragment());
-                } else {
-                    gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, new byte[]{0});
-                }
-
-
-                if (!currentResponsePacket.hasMoreData()) {
-                    currentResponsePacket = null;
+                    int chunkSize = characteristic.getValue().length - offset;
+                    byte[] chunk = new byte[chunkSize];
+                    System.arraycopy(characteristic.getValue(), offset, chunk, 0, chunkSize);
+                    gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, chunk);
                 }
             }
 
@@ -249,37 +239,20 @@ public class BlePeripheralService extends Service {
                     ", flags: prepared=" + preparedWrite + ", respNeeded=" + responseNeeded + ", offset: " + offset
                 );
 
-                if (responseNeeded) {
-                    BleUtils.retryCall(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            return gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, new byte[]{0});
-                        }
-                    });
-                }
-
-                if (offset != 0) {
-                    log("Offset is not zero: " + offset);
-                    return;
-                }
-
                 if(APDU_CONVERSATION_FINISHED_CHARACTERISTIC_UUID.equals(characteristic.getUuid())) {
                     finishConversation();
                     return;
                 }
 
-
-                if (currentPacketBuilder == null) {
-                    log("Starting APDU request session");
-                    currentPacketBuilder = fragmentationProtocol.deframenter();
+                if (preparedWrite) {
+                    onWriteBuffer(value);
+                }else {
+                    onWritePacket(value);
                 }
 
-                currentPacketBuilder.append(value);
-
-                if (currentPacketBuilder.complete()) {
-                    log("Packet received");
-                    sendBleAPDUToActivity(currentPacketBuilder.getBuffer());
-                    currentPacketBuilder = null;
+                if (gattServer != null && responseNeeded) {
+                    // need to give the same values we got as an reply, in order to get next possible part.
+                    gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, value);
                 }
             }
 
@@ -300,8 +273,10 @@ public class BlePeripheralService extends Service {
 
             @Override
             public void onExecuteWrite(BluetoothDevice device, int requestId, boolean execute) {
+                super.onExecuteWrite(device, requestId, execute);
                 log("onExecuteWrite(" + requestId + "), execute: " + execute);
-                gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null);
+                gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, new byte[] {});
+                onExecuteWriteBuffer(execute);
             }
 
             @Override
@@ -367,6 +342,38 @@ public class BlePeripheralService extends Service {
             for(BluetoothGattService s : gattServer.getServices()) {
                 log("Registered services: " + s.getUuid());
             }
+        }
+    }
+
+    private void onWriteBuffer(byte[] buffer) {
+        if (currentPacketBuilder == null) {
+            currentPacketBuilder = fragmentationProtocol.deframenter();
+            currentPacketBuilder.appendPacket(buffer);
+        } else {
+            currentPacketBuilder.addPacketFragment(buffer);
+        }
+    }
+
+    private void onWritePacket(byte[] buffer) {
+        if (currentPacketBuilder == null) {
+            currentPacketBuilder = fragmentationProtocol.deframenter();
+            currentPacketBuilder.appendPacket(buffer);
+            onApduBufferReady();
+        }
+    }
+
+    private void onExecuteWriteBuffer(boolean execute) {
+        if (execute) {
+            onApduBufferReady();
+        } else {
+            currentPacketBuilder = null;
+        }
+    }
+
+    private void onApduBufferReady() {
+        if (currentPacketBuilder.isCompleted()) {
+            sendBleAPDUToActivity(currentPacketBuilder.fullData());
+            currentPacketBuilder = null;
         }
     }
 
