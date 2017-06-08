@@ -18,16 +18,12 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.fidesmo.ble.client.apdu.CustomFragmentationProtocol;
-import com.fidesmo.ble.client.apdu.CustomPacketDefragmenter;
-import com.fidesmo.ble.client.apdu.CustomPacketFragmenter;
 import com.fidesmo.ble.client.protocol.FragmentationProtocol;
 import com.fidesmo.ble.client.protocol.PacketDefragmenter;
 import com.fidesmo.ble.client.protocol.PacketFragmenter;
+import com.fidesmo.ble.client.protocol.SimplePacketFragmenter;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
@@ -72,9 +68,9 @@ public class BlePeripheralService extends Service {
 
     private LinkedList<String> messagesList = new LinkedList<>();
 
-    private CustomFragmentationProtocol fragmentationProtocol = CustomPacketFragmenter.factory();
+    private FragmentationProtocol fragmentationProtocol = SimplePacketFragmenter.factory();
     private PacketFragmenter currentResponsePacket;
-    private CustomPacketDefragmenter currentPacketBuilder = fragmentationProtocol.deframenter();
+    private PacketDefragmenter currentPacketBuilder;
     private int mtu = 512;
 
     private AtomicLong requestId = new AtomicLong(0);
@@ -350,30 +346,34 @@ public class BlePeripheralService extends Service {
     }
 
     private void onWriteBuffer(byte[] buffer) {
-        if (currentPacketBuilder.empty()) {
-            currentPacketBuilder.append(buffer);
+        if (currentPacketBuilder == null) {
+            currentPacketBuilder = fragmentationProtocol.deframenter();
+            currentPacketBuilder.appendPacket(buffer);
         } else {
-            currentPacketBuilder.add(buffer);
+            currentPacketBuilder.addPacketFragment(buffer);
         }
     }
 
     private void onWritePacket(byte[] buffer) {
-        currentPacketBuilder.append(buffer);
-        onApduBufferReady();
+        if (currentPacketBuilder == null) {
+            currentPacketBuilder = fragmentationProtocol.deframenter();
+            currentPacketBuilder.appendPacket(buffer);
+            onApduBufferReady();
+        }
     }
 
     private void onExecuteWriteBuffer(boolean execute) {
         if (execute) {
             onApduBufferReady();
         } else {
-            currentPacketBuilder.clear();
+            currentPacketBuilder = null;
         }
     }
 
     private void onApduBufferReady() {
-        if (currentPacketBuilder.complete()) {
-            sendBleAPDUToActivity(currentPacketBuilder.getBuffer());
-            currentPacketBuilder.clear();
+        if (currentPacketBuilder.isCompleted()) {
+            sendBleAPDUToActivity(currentPacketBuilder.fullData());
+            currentPacketBuilder = null;
         }
     }
 

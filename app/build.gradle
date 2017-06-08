@@ -23,11 +23,15 @@ android {
         if (project.hasProperty('strictCheck')) {
             warningsAsErrors = strictCheck
         }
+
         textReport true
     }
 }
 
 repositories {
+    maven {
+        url "file://${System.properties['user.home']}/.m2/repository"
+    }
     maven {
         url 'http://releases.marmeladburk.fidesmo.com'
     }
@@ -45,6 +49,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'io.reactivex:rxjava:1.0.13'
-    compile 'com.fidesmo:ble-client-android:0.1.10'
+    compile 'com.fidesmo:ble-client-android:0.1.11'
     compile 'com.fidesmo:nordpol-android:0.1.18'
 }
