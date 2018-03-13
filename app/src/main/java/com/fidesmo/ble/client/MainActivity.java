@@ -36,13 +36,14 @@ import java.util.LinkedList;
 import static com.fidesmo.ble.client.BleUtils.byteArrayToString;
 
 @TargetApi(23)
-public class MainActivity extends AppCompatActivity implements OnDiscoveredTagListener, BleDeviceListener {
+public class MainActivity extends AppCompatActivity implements OnDiscoveredTagListener, BleDeviceListener, LogsConsumer {
     private String TAG = getClass().getSimpleName();
 
     final private int REQUEST_CODE_SCAN     = 123;
     final private int REQUEST_CODE_ADVERT   = 124;
 
-    private BleDeviceScanner deviceScanner = BleDeviceScanner.singleServiceScanner(this, BleCard.APDU_SERVICE_UUID, this);
+    private BleDeviceScanner deviceScanner =
+            BleDeviceScanner.singleServiceScanner(this, BleCard.APDU_SERVICE_UUID, this, this);
 
     private TagDispatcher nfcTagDispatcher;
 
@@ -311,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
         ((TextView)findViewById(R.id.outputView)).setText("");
     }
 
-    private void log(final String message) {
+    public void log(String message) {
         log("ACTIVITY", message);
     }
 
