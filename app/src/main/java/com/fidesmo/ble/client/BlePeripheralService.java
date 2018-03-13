@@ -274,11 +274,11 @@ public class BlePeripheralService extends Service {
                     currentPacketBuilder = fragmentationProtocol.deframenter();
                 }
 
-                currentPacketBuilder.append(value);
+                currentPacketBuilder.appendPacket(value);
 
-                if (currentPacketBuilder.complete()) {
+                if (currentPacketBuilder.isCompleted()) {
                     log("Packet received");
-                    sendBleAPDUToActivity(currentPacketBuilder.getBuffer());
+                    sendBleAPDUToActivity(currentPacketBuilder.fullData());
                     currentPacketBuilder = null;
                 }
             }
