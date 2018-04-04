@@ -43,8 +43,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
     final private int REQUEST_CODE_SCAN     = 123;
     final private int REQUEST_CODE_ADVERT   = 124;
 
-    private BleDeviceScanner deviceScanner =
-            BleDeviceScanner.singleServiceScanner(this, BleCard.APDU_SERVICE_UUID, this, this);
+    private BleDeviceScanner deviceScanner = new BleDeviceScanner(this);
 
     private TagDispatcher nfcTagDispatcher;
 
@@ -67,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        deviceScanner.addBleDeviceListener(this);
+        deviceScanner.setLogsConsumer(this);
 
         // Use this check to determine whether BLE is supported on the device. Then you can selectively disable BLE-related features.
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -179,9 +181,9 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
 
     @Override
     public void deviceDiscovered(BluetoothDevice bluetoothDevice) {
-        log("BLE device discovered. Obtaining card information");
+        // log("BLE device discovered. Obtaining card information");
 
-        CardInfoClient client = new CardInfoClient(new BleCard(this, bluetoothDevice));
+        CardInfoClient client = new CardInfoClient(new BleCard(this, bluetoothDevice, this));
 
         try {
             CardInfo cardInfo = client.getCardInfo();
@@ -192,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
             );
 
         } catch (Exception e) {
-            log("Failed to get remote card information");
+            log("Failed to get remote card information: " + e.getMessage());
             e.printStackTrace();
         }
     }
