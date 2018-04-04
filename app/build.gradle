@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         applicationId "com.fidesmo.ble.client"
@@ -45,6 +45,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'io.reactivex:rxjava:1.0.13'
-    compile 'com.fidesmo:ble-client-android:0.1.12'
+    compile 'com.fidesmo:ble-client-android:0.1.14'
     compile 'com.fidesmo:nordpol-android:0.1.18'
 }
