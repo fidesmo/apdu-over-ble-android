@@ -41,10 +41,10 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'io.reactivex:rxjava:1.0.13'
-    compile 'com.fidesmo:ble-client-android:0.1.14'
-    compile 'com.fidesmo:nordpol-android:0.1.18'
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.android.support:appcompat-v7:25.3.1'
+    implementation 'io.reactivex:rxjava:1.0.13'
+    implementation 'com.fidesmo:ble-client-android:0.1.14'
+    implementation 'com.fidesmo:nordpol-android:0.1.18'
 }
