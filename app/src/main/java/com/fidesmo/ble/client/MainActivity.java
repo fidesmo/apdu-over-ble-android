@@ -32,6 +32,7 @@ import nordpol.android.TagDispatcher;
 
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.regex.Pattern;
 import java.util.List;
 
 import static com.fidesmo.ble.client.BleUtils.byteArrayToString;
@@ -248,6 +249,17 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
     }
 
     private void startScan() {
+        final Pattern macPattern = Pattern.compile("[A-F0-9]{2}(:[A-F0-9]{2}){5}");
+        TextView macFilter = (TextView) findViewById(R.id.macFilter);
+        String filterString = macFilter.getText().toString();
+        if (!filterString.isEmpty()) {
+            if(macPattern.matcher(filterString).matches()) {
+                log("Applying Mac filter '" + filterString + "'");
+                deviceScanner.setDeviceAddressFilter(filterString);
+            } else {
+                log("Mac filter '" + filterString + "' is invalid, ignoring it");
+            }
+        }
         deviceScanner.startDiscovery();
     }
 
