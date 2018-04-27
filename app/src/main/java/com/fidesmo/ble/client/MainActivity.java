@@ -178,6 +178,9 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
     @Override
     public void deviceDiscovered(BluetoothDevice bluetoothDevice) {
         log("BLE device discovered. Obtaining card information");
+        if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE) {
+            bluetoothDevice.createBond();
+        }
 
         CardInfoClient client = new CardInfoClient(new BleCard(this, bluetoothDevice));
 
