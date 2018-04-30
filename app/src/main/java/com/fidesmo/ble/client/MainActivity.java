@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
     final private int REQUEST_CODE_ADVERT   = 124;
 
     private BleDeviceScanner deviceScanner =
-            BleDeviceScanner.singleServiceScanner(this, BleCard.APDU_SERVICE_UUID, this, this);
+            BleDeviceScanner.singleServiceScanner(this, BlePeripheralService.SERVICE_WITHOUT_ENCRYPTION, this, this);
 
     private TagDispatcher nfcTagDispatcher;
 
@@ -180,7 +180,11 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
     public void deviceDiscovered(BluetoothDevice bluetoothDevice) {
         log("BLE device discovered. Obtaining card information");
 
-        CardInfoClient client = new CardInfoClient(new BleCard(this, bluetoothDevice));
+        boolean bond = bluetoothDevice.createBond();
+
+        log("Creating bond: " + bond);
+
+        CardInfoClient client = new CardInfoClient(new BleCard(this, bluetoothDevice, this));
 
         try {
             CardInfo cardInfo = client.getCardInfo();

@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 
 import static com.fidesmo.ble.client.BleCard.APDU_CONVERSATION_FINISHED_CHARACTERISTIC_UUID;
 import static com.fidesmo.ble.client.BleUtils.*;
@@ -44,6 +45,10 @@ public class BlePeripheralService extends Service {
     public static final String CONVERSATION_FINISHED = "com.fidesmo.ble.client.BlePeripheralService.CONVERSATION_FINISHED";
     // Client Characteristic Configuration Descriptor (CCCD): https://www.bluetooth.com/specifications/gatt/descriptors
     public static final String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
+
+    // Service UUIDs are redefined as BLE refuses to Advertise 2 services with 128 byte UUIDs
+    public static final UUID SERVICE_WITHOUT_ENCRYPTION = UUID.fromString("12110000-0000-1000-8000-00805F9B34FB");
+    public static final UUID SERVICE_WITH_ENCRYPTION = UUID.fromString("12120000-0000-1000-8000-00805F9B34FB");
 
     public static final String CMD_LOGS = "LOGS";
     public static final String CMD_SE_RESPONSE = "SE_RESPONSE";
@@ -112,7 +117,12 @@ public class BlePeripheralService extends Service {
             return;
         }
 
-        if (!btAdapter.isMultipleAdvertisementSupported()) {
+        try {
+            if (!btAdapter.isMultipleAdvertisementSupported()) {
+                log("No Advertising Support");
+                return;
+            }
+        } catch (NoSuchMethodError er) {
             log("No Advertising Support");
             return;
         }
@@ -124,11 +134,12 @@ public class BlePeripheralService extends Service {
                 .setTimeout(0)
                 .build();
 
-        ParcelUuid pUuid = new ParcelUuid(BleCard.APDU_SERVICE_UUID);
-
         AdvertiseData data = new AdvertiseData.Builder()
                 .setIncludeDeviceName(false)
-                .addServiceUuid(pUuid)
+                .addServiceUuid(new ParcelUuid(SERVICE_WITH_ENCRYPTION))
+                .addServiceUuid(new ParcelUuid(SERVICE_WITHOUT_ENCRYPTION))
+                //.addServiceUuid(new ParcelUuid(BleCard.APDU_SERVICE_UUID))
+                //.addServiceUuid(new ParcelUuid(SERVICE_WITH_ENCRYPTION))
                 .build();
 
         final BluetoothLeAdvertiser advertiser = btAdapter.getBluetoothLeAdvertiser();
@@ -361,8 +372,53 @@ public class BlePeripheralService extends Service {
             service.addCharacteristic(writeCharacteristic);
             service.addCharacteristic(finishConversationCharacteristic);
 
-            boolean result = gattServer.addService(service);
-            log("Added custom service: " + result);
+            log("Adding normal service");
+            gattServer.addService(service);
+
+            BluetoothGattService securedService =
+                    new BluetoothGattService(SERVICE_WITH_ENCRYPTION, BluetoothGattService.SERVICE_TYPE_SECONDARY);
+
+            BluetoothGattCharacteristic readNotifyCharacteristicSecure =
+                    new BluetoothGattCharacteristic(BleCard.APDU_RESPONSE_READY_NOTIFY_CHARACTERISTIC_UUID,
+                            BluetoothGattCharacteristic.PROPERTY_NOTIFY,
+                            BluetoothGattCharacteristic.PERMISSION_READ_ENCRYPTED);
+
+            // Notification descriptor is needed to be added to "readNotifyCharacteristic"
+            BluetoothGattDescriptor gDEncrypted = new BluetoothGattDescriptor(UUID.fromString(CLIENT_CHARACTERISTIC_CONFIG),
+                    BluetoothGattDescriptor.PERMISSION_WRITE_ENCRYPTED | BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED);
+            gDEncrypted.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            readNotifyCharacteristicSecure.addDescriptor(gDEncrypted);
+
+            securedService.addCharacteristic(readNotifyCharacteristicSecure);
+
+            securedService.addCharacteristic(
+                    new BluetoothGattCharacteristic(BleCard.APDU_READ_CHARACTERISTIC_UUID,
+                            BluetoothGattCharacteristic.PROPERTY_READ,
+                            BluetoothGattCharacteristic.PERMISSION_READ_ENCRYPTED)
+            );
+
+            securedService.addCharacteristic(
+                    new BluetoothGattCharacteristic(BleCard.APDU_WRITE_CHARACTERISTIC_UUID,
+                            BluetoothGattCharacteristic.PROPERTY_WRITE,
+                            BluetoothGattCharacteristic.PERMISSION_WRITE_ENCRYPTED)
+            );
+
+            securedService.addCharacteristic(
+                    new BluetoothGattCharacteristic(BleCard.APDU_MAX_MEMORY_FOR_APDU_PROCESSING,
+                            BluetoothGattCharacteristic.PROPERTY_READ,
+                            BluetoothGattCharacteristic.PERMISSION_READ_ENCRYPTED)
+            );
+
+            securedService.addCharacteristic(
+                    new BluetoothGattCharacteristic(APDU_CONVERSATION_FINISHED_CHARACTERISTIC_UUID,
+                            BluetoothGattCharacteristic.PROPERTY_WRITE,
+                            BluetoothGattCharacteristic.PERMISSION_WRITE_ENCRYPTED)
+            );
+
+            log("Adding secure service");
+            gattServer.addService(securedService);
+
+            log("Services: " + gattServer.getServices());
 
             for(BluetoothGattService s : gattServer.getServices()) {
                 log("Registered services: " + s.getUuid());

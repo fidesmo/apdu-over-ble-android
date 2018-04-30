@@ -24,7 +24,8 @@ import java.util.concurrent.TimeUnit;
 public class BleCard implements IsoCard, Closeable {
     private static final String TAG = BleCard.class.getName();
 
-    public static final UUID APDU_SERVICE_UUID = UUID.fromString("8e790d52-bb90-4967-a4a5-3f21aa9e05eb");
+    public static final UUID APDU_SERVICE_UUID = BlePeripheralService.SERVICE_WITH_ENCRYPTION;
+    // UUID.fromString("8e790d52-bb90-4967-a4a5-3f21aa9e05eb");
     public static final UUID APDU_WRITE_CHARACTERISTIC_UUID = UUID.fromString("8e79ecae-bb90-4967-a4a5-3f21aa9e05eb");
     public static final UUID APDU_CONVERSATION_FINISHED_CHARACTERISTIC_UUID = UUID.fromString("8e798746-bb90-4967-a4a5-3f21aa9e05eb");
     public static final UUID APDU_RESPONSE_READY_NOTIFY_CHARACTERISTIC_UUID = UUID.fromString("8e795e92-bb90-4967-a4a5-3f21aa9e05eb");
@@ -40,11 +41,13 @@ public class BleCard implements IsoCard, Closeable {
     private List<OnCardErrorListener> errorListeners = new CopyOnWriteArrayList();
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_ADMIN)
-    public BleCard(Context context, BluetoothDevice device) {
+    public BleCard(Context context, BluetoothDevice device, LogsConsumer logsConsumer) {
         gattClient = new BleGattServiceClient(context,
                 device,
                 SimplePacketFragmenter.factory(),
                 transceiveLength);
+
+        gattClient.setLogsConsumer(logsConsumer);
     }
 
     @Override
