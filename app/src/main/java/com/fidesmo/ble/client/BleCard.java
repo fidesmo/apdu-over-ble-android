@@ -12,13 +12,13 @@ import nordpol.OnCardErrorListener;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import static com.fidesmo.ble.client.Utils.*;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class BleCard implements IsoCard, Closeable {
