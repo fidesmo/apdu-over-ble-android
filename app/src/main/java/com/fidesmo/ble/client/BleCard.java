@@ -6,19 +6,20 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.RequiresPermission;
-import android.util.Log;
 import com.fidesmo.ble.client.protocol.SimplePacketFragmenter;
 import nordpol.IsoCard;
 import nordpol.OnCardErrorListener;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import static com.fidesmo.ble.client.Utils.*;
+import static com.fidesmo.ble.client.Utils.fromApduSequence;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class BleCard implements IsoCard, Closeable {
@@ -118,12 +119,13 @@ public class BleCard implements IsoCard, Closeable {
     @Override
     public byte[] transceive(byte[] command) throws IOException {
         try {
-            return gattClient.sendReceive(command,
-                    APDU_SERVICE_UUID,
-                    APDU_WRITE_CHARACTERISTIC_UUID,
-                    APDU_RESPONSE_READY_NOTIFY_CHARACTERISTIC_UUID,
-                    APDU_READ_CHARACTERISTIC_UUID
-            ).get();
+            List<byte[]> apduResponses = transceive(Collections.singletonList(command));
+
+            if (apduResponses.size() != 1) {
+                throw new IllegalArgumentException("Only a single response is expected");
+            }
+
+            return apduResponses.get(0);
         } catch (Exception e) {
             throw new IOException(e);
         }
@@ -131,13 +133,22 @@ public class BleCard implements IsoCard, Closeable {
 
     @Override
     public List<byte[]> transceive(List<byte[]> commands) throws IOException {
-        List<byte[]> result = new ArrayList<>(commands.size());
+        try {
+            byte[] apduSeq = toApduSequence(commands);
 
-        for (byte[] cmd: commands) {
-            result.add(transceive(cmd));
+            byte[] response = gattClient.sendReceive(apduSeq,
+                    APDU_SERVICE_UUID,
+                    APDU_WRITE_CHARACTERISTIC_UUID,
+                    APDU_RESPONSE_READY_NOTIFY_CHARACTERISTIC_UUID,
+                    APDU_READ_CHARACTERISTIC_UUID
+            ).get();
+
+            return fromApduSequence(response);
+        } catch (Exception e) {
+            throw new IOException(e);
         }
-
-        return result;
     }
+
+
 
 }
