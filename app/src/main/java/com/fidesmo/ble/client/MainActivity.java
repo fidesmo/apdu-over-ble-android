@@ -32,6 +32,7 @@ import nordpol.android.TagDispatcher;
 
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 
 import static com.fidesmo.ble.client.BleUtils.byteArrayToString;
 
@@ -273,8 +274,9 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
 
                 Log.i(TAG, "Trying to transcieve data to a card: " + byteArrayToString(operation.getRequest()));
 
-                byte[] result = nfcCard.transceive(operation.getRequest());
-                operation.setResponse(result);
+                List<byte[]> result = nfcCard.transceive(Utils.fromApduSequence(operation.getRequest()));
+                operation.setResponse(Utils.toApduSequence(result));
+
                 sendResponse(operation);
 
                 operation = pendingOperations.poll();
