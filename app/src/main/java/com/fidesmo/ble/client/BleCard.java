@@ -60,7 +60,12 @@ public class BleCard implements IsoCard, Closeable {
 
     @Override
     public void close() throws IOException {
-        gattClient.send(new byte[]{0,0,0,0}, APDU_SERVICE_UUID, APDU_CONVERSATION_FINISHED_CHARACTERISTIC_UUID);
+        try {
+            gattClient.send(new byte[]{0,0,0,0}, APDU_SERVICE_UUID, APDU_CONVERSATION_FINISHED_CHARACTERISTIC_UUID).get();
+        } catch (Exception e) {
+             throw new IOException(e);
+        }
+
         gattClient.close();
     }
 
