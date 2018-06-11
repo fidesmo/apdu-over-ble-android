@@ -19,7 +19,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import static com.fidesmo.ble.client.Utils.*;
-import static com.fidesmo.ble.client.Utils.fromApduSequence;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class BleCard implements IsoCard, Closeable {
@@ -38,14 +37,17 @@ public class BleCard implements IsoCard, Closeable {
     private int transceiveLength = 512;
     private boolean connected = false;
 
-    private List<OnCardErrorListener> errorListeners = new CopyOnWriteArrayList();
+    private List<OnCardErrorListener> errorListeners = new CopyOnWriteArrayList<OnCardErrorListener>();
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_ADMIN)
-    public BleCard(Context context, BluetoothDevice device) {
+    public BleCard(Context context, BluetoothDevice device, LogsConsumer logsConsumer) {
         gattClient = new BleGattServiceClient(context,
                 device,
                 SimplePacketFragmenter.factory(),
                 transceiveLength);
+
+        gattClient.setLogsConsumer(logsConsumer);
+
     }
 
     @Override
@@ -79,7 +81,7 @@ public class BleCard implements IsoCard, Closeable {
                 public void connectionEstablished() {
                     connectionLatch.countDown();
                 }
-            });
+            }, Collections.singletonList(APDU_SERVICE_UUID));
 
             connectionLatch.await(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {

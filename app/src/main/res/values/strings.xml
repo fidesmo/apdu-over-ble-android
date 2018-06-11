@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">APDU over BLE demo application</string>
+    <string name="mac_filter_hint">MAC filter</string>
 </resources>

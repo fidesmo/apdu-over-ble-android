@@ -37,14 +37,20 @@ repositories {
     maven {
         url "http://dl.bintray.com/fidesmo/maven"
     }
+    ivy {
+        url "${System.properties['user.home']}/.ivy2/local"
+    }
+    flatDir{
+        dirs '../libs'
+    }
     jcenter()
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
     implementation 'com.android.support:appcompat-v7:25.3.1'
     implementation 'io.reactivex:rxjava:1.0.13'
-    implementation 'com.fidesmo:ble-client-android:0.1.14'
+    implementation 'com.fidesmo:ble-client-android:0.1.17'
     implementation 'com.fidesmo:nordpol-android:0.1.18'
 }

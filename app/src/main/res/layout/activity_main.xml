@@ -20,26 +20,48 @@
             android:layout_alignParentStart="true" android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" android:indeterminate="true"
             android:visibility="invisible"/>
+
     <ScrollView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/scrollView"
-            android:layout_alignParentTop="true" android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" android:fillViewport="false"
-            android:layout_above="@+id/btnScan">
+        android:id="@+id/scrollView"
+        android:layout_width="368dp"
+        android:layout_height="426dp"
+        android:layout_above="@+id/btnScan"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="5dp"
+        android:fillViewport="false">
+
         <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Press scan or Advertise button"
-                android:id="@+id/outputView"
-                android:layout_alignParentTop="true" android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"/>
-    </ScrollView>
-    <Button
+            android:id="@+id/outputView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Scan"
-            android:id="@+id/btnScan"
-            android:onClick="onDiscoveryClicked"
-            android:layout_alignParentBottom="true" android:layout_centerHorizontal="true"/>
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:text="Press scan or Advertise button" />
+    </ScrollView>
+
+    <Button
+        android:id="@+id/btnScan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/progressBar"
+        android:layout_alignParentBottom="true"
+        android:onClick="onDiscoveryClicked"
+        android:text="Scan"
+        android:layout_alignRight="@+id/progressBar" />
+
+    <EditText
+        android:id="@+id/macFilter"
+        android:layout_width="255dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text=""
+        android:hint="@string/mac_filter_hint"
+        android:layout_alignParentLeft="true" />
+
 </RelativeLayout>
