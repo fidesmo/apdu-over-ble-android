@@ -35,12 +35,12 @@ For a phone to work as a BLE client, you need to install the app in it, and then
 
 1. Click the "Scan" button at the bottom. This will start scanning for BLE Servers advertising:
 
-    <img alt="scan started" src="https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/scan-started.png" width="50%" align="right"/>
+    <img alt="scan started" src="https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/scan-started.png" width="50%"/>
      
 2. The client will automatically discover the peripheral device (server). If the server is this same application running in server mode, the server will ask the user to attach the NFC card to it.
 If the card is a Fidesmo card (link to https://developer.fidesmo.com/fidesmocard) the card identifiers are read by the server and transmitted to the client, which displays them.
 
-    <img alt="card information obtained" src="https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/info-obtained.jpg" width="50%" align="right"/>
+    <img alt="card information obtained" src="https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/info-obtained.jpg" width="50%"/>
 
 
 
