@@ -21,12 +21,12 @@ For this to work correctly, please be sure to attach a contactless card to the
 phone after establishing the connection. Server will print a message: `Please attach the card to the phone` which indicates that a 
 card can be attached. You will know that the card is detected when the text `Card attached` appears on the screen.
 
-![card found](https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/card-found.png)
+<img alt="card found" src="https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/card-found.png" width="50%"/>
 
 When the phone acting as the client starts the communication, you will see all
 the traces of the NFC communication in the server:
 
-![nfc communication](https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/NFC-traces.png)
+<img alt="nfc communication" src="https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/NFC-traces.png" width="50%"/>
 
 ## Client
 
@@ -35,12 +35,12 @@ For a phone to work as a BLE client, you need to install the app in it, and then
 
 1. Click the "Scan" button at the bottom. This will start scanning for BLE Servers advertising:
 
-    ![scan started](https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/scan-started.png)
+    <img alt="scan started" src="https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/scan-started.png" width="50%"/>
      
 2. The client will automatically discover the peripheral device (server). If the server is this same application running in server mode, the server will ask the user to attach the NFC card to it.
 If the card is a Fidesmo card (link to https://developer.fidesmo.com/fidesmocard) the card identifiers are read by the server and transmitted to the client, which displays them.
 
-    ![card information obtained](https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/info-obtained.jpg)
+    <img alt="card information obtained" src="https://github.com/fidesmo/apdu-over-ble-android/blob/master/images/info-obtained.jpg" width="50%"/>
 
 
 
