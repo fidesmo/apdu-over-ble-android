@@ -19,6 +19,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.fidesmo.ble.R;
@@ -306,6 +307,14 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
             TextView tv = (TextView) findViewById(R.id.outputView);
             tv.append(prefix + ": " + message + "\n");
             Log.i(TAG, message);
+
+            //Scroll to the bottom of the view once the text has been appended.
+            final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView);
+            scrollView.post(new Runnable() {
+                public void run() {
+                    scrollView.fullScroll(View.FOCUS_DOWN);
+                }
+            });
         }
         });
     }
