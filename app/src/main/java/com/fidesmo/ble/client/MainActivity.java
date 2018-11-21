@@ -19,6 +19,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.fidesmo.ble.R;
@@ -29,6 +30,7 @@ import nordpol.IsoCard;
 import nordpol.android.AndroidCard;
 import nordpol.android.OnDiscoveredTagListener;
 import nordpol.android.TagDispatcher;
+import nordpol.android.TagDispatcherBuilder;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -100,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
             askForBtDevicePermissionsAndFireAction(REQUEST_CODE_ADVERT);
         }
 
-        nfcTagDispatcher = TagDispatcher.get(this, this, false, false, false, true, false, true);
+        nfcTagDispatcher = new TagDispatcherBuilder(this, this).build();
     }
 
 
@@ -306,6 +308,14 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
             TextView tv = (TextView) findViewById(R.id.outputView);
             tv.append(prefix + ": " + message + "\n");
             Log.i(TAG, message);
+
+            //Scroll to the bottom of the view once the text has been appended.
+            final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView);
+            scrollView.post(new Runnable() {
+                public void run() {
+                    scrollView.fullScroll(View.FOCUS_DOWN);
+                }
+            });
         }
         });
     }
