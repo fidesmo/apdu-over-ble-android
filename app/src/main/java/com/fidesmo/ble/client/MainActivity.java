@@ -30,6 +30,7 @@ import nordpol.IsoCard;
 import nordpol.android.AndroidCard;
 import nordpol.android.OnDiscoveredTagListener;
 import nordpol.android.TagDispatcher;
+import nordpol.android.TagDispatcherBuilder;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -101,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
             askForBtDevicePermissionsAndFireAction(REQUEST_CODE_ADVERT);
         }
 
-        nfcTagDispatcher = TagDispatcher.get(this, this, false, false, false, true, false, true);
+        nfcTagDispatcher = new TagDispatcherBuilder(this, this).build();
     }
 
 
